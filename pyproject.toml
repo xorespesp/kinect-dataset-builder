@@ -1,0 +1,10 @@
+[project]
+name = "kinect-dataset-builder"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pykinect-azure>=0.0.4",
+    "opencv-python>=4.13.0.92",
+]
