@@ -114,7 +114,7 @@ class RGBDatasetBuilder(DatasetBuilderBase):
         if num_bodies == 0:
             return None, None
 
-        min_dist_sq = float('inf')
+        min_dist_x = float('inf')
         primary_body = None
         primary_body_idx = None
 
@@ -122,10 +122,10 @@ class RGBDatasetBuilder(DatasetBuilderBase):
             body = body_frame.get_body(i)
             pelvis = body.joints[pykinect.K4ABT_JOINT_PELVIS]
             
-            # Calculate squared distance based on x, y, z positions
-            dist_sq = pelvis.position.x**2 + pelvis.position.y**2 + pelvis.position.z**2
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
+            # Find the person closest to the vertical axis of the camera's field of view.
+            dist_x = abs(pelvis.position.x)
+            if dist_x < min_dist_x:
+                min_dist_x = dist_x
                 primary_body = body
                 primary_body_idx = i
 
