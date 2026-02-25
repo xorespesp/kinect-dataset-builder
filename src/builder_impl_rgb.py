@@ -26,6 +26,38 @@ class RGBDatasetBuilder(DatasetBuilderBase):
         calibration = playback.get_calibration()
         tracker = pykinect.start_body_tracker(calibration=calibration)
 
+        def _object_to_dict(obj):
+            res = {}
+            for attr in dir(obj):
+                if attr.startswith('_'): continue
+                val = getattr(obj, attr)
+                if not callable(val): res[attr] = val
+            return res
+
+        record_conf = playback.get_record_configuration()
+        calib_dict = {
+            "color_params": _object_to_dict(calibration.color_params),
+            "depth_params": _object_to_dict(calibration.depth_params),
+            'record_conf': {
+                'color_format': ['JPG', 'NV12', 'YUY2', 'BGRA32'][record_conf.handle().color_format], # 0:JPG, 1:NV12, 2:YUY2, 3:BGRA32
+                'color_resolution': ['OFF', '720p', '1080p', '1440p', '1536p', '2160p', '3072p'][record_conf.handle().color_resolution], # 0:OFF, 1:720p, 2:1080p, 3:1440p, 4:1536p, 5:2160p, 6:3072p
+                'depth_mode': ['OFF', 'NFOV_2X2BINNED', 'NFOV_UNBINNED', 'WFOV_2X2BINNED', 'WFOV_UNBINNED', 'Passive IR'][record_conf.handle().depth_mode], # 0:OFF, 1:NFOV_2X2BINNED, 2:NFOV_UNBINNED,3:WFOV_2X2BINNED, 4:WFOV_UNBINNED, 5:Passive IR
+                'camera_fps': [5, 15, 30][record_conf.handle().camera_fps], # 0:5 FPS, 1:15 FPS, 2:30 FPS
+                #'color_track_enabled': record_conf.handle().color_track_enabled, # True of False. If Color camera images exist
+                #'depth_track_enabled': record_conf.handle().depth_track_enabled, # True of False. If Depth camera images exist
+                #'ir_track_enabled': record_conf.handle().ir_track_enabled, # True of False. If IR camera images exist
+                #'imu_track_enabled': record_conf.handle().imu_track_enabled, # True of False. If IMU samples exist
+                #'depth_delay_off_color_usec': record_conf.handle().depth_delay_off_color_usec, # Delay between the color image and the depth image
+                #'wired_sync_mode': ['Standalone', 'Master', 'Subordinate'][record_conf.handle().wired_sync_mode], # 0:Standalone mode, 1:Master mode, 2:Subordinate mode
+                #'subordinate_delay_off_master_usec': record_conf.handle().subordinate_delay_off_master_usec, # The external synchronization timing.
+                #'start_timestamp_offset_usec': record_conf.handle().start_timestamp_offset_usec, # Start timestamp offset.
+            }
+        }
+
+        json_path = output_dir_path / 'calib_info.json'
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(calib_dict, f, indent=2)
+
         frame_idx = 0
         try:
             while True:
